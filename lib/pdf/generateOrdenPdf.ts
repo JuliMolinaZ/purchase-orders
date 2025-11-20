@@ -308,9 +308,13 @@ export async function generateOrdenPdf(data: OrdenFormData): Promise<Uint8Array>
     }
 
     // Validar tipoMonto
+    console.log('tipoMonto recibido:', data.tipoMonto);
     const tipoMonto = data.tipoMonto && (data.tipoMonto === 'integrado' || data.tipoMonto === 'mas_iva') 
       ? data.tipoMonto 
       : 'mas_iva';
+    
+    console.log('tipoMonto validado:', tipoMonto);
+    console.log('monto recibido:', data.monto);
     
     const validatedData = {
       ...data,
@@ -634,16 +638,30 @@ export async function generateOrdenPdf(data: OrdenFormData): Promise<Uint8Array>
     let subtotal: number;
     let iva: number;
     let total: number;
+    const isIntegrado = validatedData.tipoMonto === 'integrado';
 
-    if (validatedData.tipoMonto === 'integrado') {
+    console.log('Calculando montos - tipoMonto:', validatedData.tipoMonto, 'isIntegrado:', isIntegrado, 'monto:', validatedData.monto);
+
+    if (isIntegrado) {
+      // Monto integrado: el monto ingresado es el TOTAL que ya incluye IVA
       total = validatedData.monto;
       subtotal = validatedData.monto / 1.16;
       iva = total - subtotal;
+      console.log('Cálculo integrado - Total:', total, 'Subtotal:', subtotal, 'IVA:', iva);
     } else {
+      // Monto + IVA: el monto ingresado es el SUBTOTAL
       subtotal = validatedData.monto;
       iva = validatedData.monto * 0.16;
       total = subtotal + iva;
+      console.log('Cálculo mas_iva - Subtotal:', subtotal, 'IVA:', iva, 'Total:', total);
     }
+
+    // Redondear a 2 decimales para evitar errores de precisión
+    subtotal = Math.round(subtotal * 100) / 100;
+    iva = Math.round(iva * 100) / 100;
+    total = Math.round(total * 100) / 100;
+    
+    console.log('Montos finales redondeados - Subtotal:', subtotal, 'IVA:', iva, 'Total:', total);
 
     const labelX = PAGE.marginX + 3 * 2.83465;
     const valueX = PAGE.marginX + contentWidth - 3 * 2.83465;
@@ -667,9 +685,10 @@ export async function generateOrdenPdf(data: OrdenFormData): Promise<Uint8Array>
       color: COLORS.negro,
     });
 
-    // IVA
+    // IVA - con etiqueta diferente según el tipo
     ry -= 5 * 2.83465;
-    page.drawText('IVA 16%:', {
+    const ivaLabel = isIntegrado ? 'IVA 16% (Incluido):' : 'IVA 16%:';
+    page.drawText(ivaLabel, {
       x: labelX,
       y: ry,
       size: 10,
