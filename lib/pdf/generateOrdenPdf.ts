@@ -227,24 +227,41 @@ async function drawHeader(
 
   // Logo en la esquina superior derecha
   // Intentar múltiples rutas posibles para encontrar el logo
+  const cwd = process.cwd();
   const possiblePaths = [
-    path.join(process.cwd(), 'public', 'logo-r.png'),
-    path.join(process.cwd(), 'logo-r.png'),
-    path.join(__dirname, '..', '..', 'public', 'logo-r.png'),
-    path.join(__dirname, '..', '..', '..', 'public', 'logo-r.png'),
-    '/app/public/logo-r.png', // Ruta en Docker
-    path.join('/app', 'public', 'logo-r.png'),
+    path.join(cwd, 'public', 'logo-r.png'),           // Desarrollo local
+    path.join(cwd, 'logo-r.png'),                      // Alternativa
+    path.join(cwd, '.next', 'standalone', 'public', 'logo-r.png'), // Next.js standalone
+    '/app/public/logo-r.png',                          // Docker - ruta absoluta
+    path.join('/app', 'public', 'logo-r.png'),         // Docker - path.join
+    path.join(cwd, '..', 'public', 'logo-r.png'),      // Alternativa relativa
   ];
 
   let logoImage: PDFImage | null = null;
+  let logoLoadedFrom = '';
   
   for (const logoPath of possiblePaths) {
     try {
       if (fs.existsSync(logoPath)) {
         const logoImageBytes = fs.readFileSync(logoPath);
-        logoImage = await pdfDoc.embedPng(logoImageBytes);
-        console.log('Logo cargado exitosamente desde:', logoPath);
-        break;
+        // Intentar como PNG primero
+        try {
+          logoImage = await pdfDoc.embedPng(logoImageBytes);
+          logoLoadedFrom = logoPath;
+          console.log('Logo PNG cargado exitosamente desde:', logoPath);
+          break;
+        } catch (pngError) {
+          // Si falla PNG, intentar como JPEG
+          try {
+            logoImage = await pdfDoc.embedJpg(logoImageBytes);
+            logoLoadedFrom = logoPath;
+            console.log('Logo JPEG cargado exitosamente desde:', logoPath);
+            break;
+          } catch (jpgError) {
+            console.warn('No se pudo cargar el logo como PNG ni JPEG desde:', logoPath);
+            continue;
+          }
+        }
       }
     } catch (error) {
       // Continuar con la siguiente ruta
@@ -266,12 +283,13 @@ async function drawHeader(
         width: logoWidth,
         height: logoHeight,
       });
-      console.log('Logo dibujado en el PDF');
+      console.log('Logo dibujado exitosamente en el PDF desde:', logoLoadedFrom);
     } catch (error) {
-      console.error('Error dibujando logo:', error);
+      console.error('Error dibujando logo en el PDF:', error);
     }
   } else {
-    console.warn('No se pudo cargar el logo desde ninguna de las rutas probadas:', possiblePaths);
+    console.warn('⚠️ No se pudo cargar el logo. Rutas probadas:', possiblePaths);
+    console.warn('Working directory:', cwd);
   }
 }
 
