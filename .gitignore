@@ -1,0 +1,112 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+.pnpm-store
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+/dist
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# local env files (confidenciales)
+.env
+.env*.local
+.env.development
+.env.production
+.env.test
+*.env
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# logs
+logs
+*.log
+/logs
+
+# PM2
+.pm2
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Docker
+docker-compose.override.yml
+
+# Temporary files
+temp/
+tmp/
+.temp/
+.tmp/
+*.tmp
+*.temp
+
+# AI/IA Tools - Archivos de asistencia IA
+.cursor/
+.claude/
+.anthropic/
+.cursorrules
+.cursorignore
+*.claude
+*.cursor
+.idea/
+*.code-workspace
+
+# Documentación innecesaria (mantener solo README.md)
+AUTHENTICATION.md
+CONTRIBUTING.md
+DEPLOYMENT.md
+EDT.md
+PROJECT_SUMMARY.md
+QUICKSTART.md
+
+# Archivos de desarrollo/test innecesarios
+test.html
+*.test.*
+*.spec.*
+.eslintcache
+.stylelintcache
+
+# Archivos de configuración locales/confidenciales
+*.local.*
+config.local.*
+secrets.*
+credentials.*
+.secrets/
+
+# Backup files
+*.bak
+*.backup
+*~
+.*.swp
